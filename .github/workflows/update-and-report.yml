@@ -36,5 +36,5 @@ jobs:
         git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
         git add packages/ index.html data.json
-        git commit -m "auto-update CVE database and report [$(date -u +%Y-%m-%d-%H)]"
+        git commit -m "chore(workflow): update commit message format for CVE auto-update"
         git push
