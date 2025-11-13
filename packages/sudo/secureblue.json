@@ -1,0 +1,11 @@
+{
+  "ALL": {
+    "releases": {
+      "stream": {
+        "status": "not affected",
+        "mitigated": false,
+        "comment": "Secureblue don't use sudo in favor of run0 (<a href='https://mastodon.social/@pid_eins/112353324518585654'>why?</a>)"
+      }
+    }
+  }
+}

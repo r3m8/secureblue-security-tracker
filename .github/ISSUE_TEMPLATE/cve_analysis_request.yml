@@ -1,0 +1,98 @@
+name: CVE analysis request
+description: Request analysis for a specific CVE and its impact on Secureblue
+title: "[CVE Analysis] : CVE-YYYY-NNNN "
+labels: ["cve-analysis", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## CVE Analysis Request
+
+        Use this template to request analysis of a specific CVE for Secureblue. This creates a per-CVE secureblue.json file.
+
+  - type: input
+    id: cve-id
+    attributes:
+      label: CVE ID
+      description: The CVE identifier (e.g., CVE-2025-12345)
+      placeholder: CVE-2025-12345
+    validations:
+      required: true
+
+  - type: input
+    id: package-name
+    attributes:
+      label: Package Name
+      description: The Debian package name affected by this CVE
+      placeholder: e.g., apache2, nginx, python-django
+    validations:
+      required: true
+
+  - type: dropdown
+    id: status
+    attributes:
+      label: Secureblue Status
+      description: What status should be set for this CVE in Secureblue?
+      options:
+        - unverified (needs analysis)
+        - open (affected, no mitigation)
+        - resolved (fixed in Secureblue)
+        - not affected (Secureblue not vulnerable)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: mitigated
+    attributes:
+      label: Mitigated
+      description: Is this vulnerability mitigated in Secureblue (even if status is "open")?
+      options:
+        - label: Yes, Secureblue has mitigation for this CVE
+
+  - type: textarea
+    id: analysis
+    attributes:
+      label: CVE Analysis
+      description: Describe why Secureblue is affected/not affected. Include technical details, security boundaries, sandboxing, etc.
+      placeholder: |
+        Explain Secureblue's exposure to this vulnerability :
+
+        - Does Secureblue include this package/component ?
+        - What configuration/deployment mitigates the issue ?
+        - Are there sandboxing, SELinux policies, or other controls ?
+        - Reference any upstream fixes, patches, or workarounds
+    validations:
+      required: true
+
+  - type: textarea
+    id: comment
+    attributes:
+      label: Comment for secureblue.json
+      description: The HTML comment to include in secureblue.json (can include links)
+      placeholder: "Secureblue mitigates via flatpak sandboxing (<a href='...'>details</a>)"
+    validations:
+      required: true
+
+  - type: input
+    id: references
+    attributes:
+      label: Reference URLs
+      description: Links to security advisories, patches, discussions
+      placeholder: "https://security-tracker.debian.org/tracker/CVE-XXXX-YYYYY"
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I've verified Secureblue's exposure to this vulnerability
+        - label: I can provide evidence for the analysis (logs, testing, documentation)
+        - label: I'm willing to submit a PR with the secureblue.json update
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      description: Any other relevant details about this CVE
+      placeholder: Severity assessment, exploitation conditions, etc.

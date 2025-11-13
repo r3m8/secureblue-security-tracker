@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVE Comparison : debian vs secureblue</title>
+    <style>
+:root {
+  color-scheme: dark light;
+  --bg-0: #0f141a; --bg-1: #131a22; --bg-2: #18212b;
+  --bd-1: #243042; --bd-2: #324155;
+  --tx-1: #e6eaf0; --tx-2: #a7b2c3; --tx-3: #7f8b9d;
+  --accent: #60a5fa; --accent-strong: #3b82f6;
+  --row-even: rgba(255,255,255,0.03); --row-hover: rgba(96,165,250,0.10);
+  --header-bg: #121923; --footer-bg: #121923;
+  --open-bg: #2a1214; --open-fg: #fda4af; --open-bd: #7f1d1d;
+  --resolved-bg: #0f2418; --resolved-fg: #86efac; --resolved-bd: #166534;
+  --unverified-bg: #2a210f; --unverified-fg: #fcd34d; --unverified-bd: #92400e;
+  --na-bg: #1a2230; --na-fg: #cbd5e1; --na-bd: #334155;
+  --mitig-yes: #86efac; --mitig-no: #fda4af;
+  --chip-bg: rgba(96,165,250,0.12); --chip-bd: rgba(96,165,250,0.35);
+  --legend-bg: #16202b;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg-0: #f7f9fc; --bg-1: #ffffff; --bg-2: #f1f5f9;
+    --bd-1: #d7dee7; --bd-2: #c5d0dc;
+    --tx-1: #0f172a; --tx-2: #334155; --tx-3: #475569;
+    --accent: #2563eb; --accent-strong: #1d4ed8;
+    --row-even: rgba(2,6,23,0.03); --row-hover: rgba(37,99,235,0.10);
+    --open-bg: #fee2e2; --open-fg: #b91c1c; --open-bd: #ef4444;
+    --resolved-bg: #e8f7ee; --resolved-fg: #166534; --resolved-bd: #22c55e;
+    --unverified-bg: #fff3cd; --unverified-fg: #92400e; --unverified-bd: #f59e0b;
+    --na-bg: #eef2f7; --na-fg: #334155; --na-bd: #94a3b8;
+    --mitig-yes: #166534; --mitig-no: #b91c1c;
+    --chip-bg: rgba(37,99,235,0.10); --chip-bd: rgba(37,99,235,0.35);
+    --legend-bg: #f1f5f9; --header-bg: #ffffff;
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", Ubuntu, Cantarell, "Open Sans", sans-serif;
+  background: var(--bg-0);
+  color: var(--tx-1);
+  line-height: 1.6;
+  padding: 32px 20px;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: var(--accent); color: #0b0f14; }
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  background: var(--bg-1);
+  border: 1px solid var(--bd-1);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  overflow: clip;
+}
+
+.header {
+  background: var(--header-bg);
+  color: var(--tx-1);
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--bd-2);
+}
+.header h1 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  margin-bottom: 6px;
+}
+.header p {
+  font-size: 0.9rem;
+  color: var(--tx-3);
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 18px;
+}
+.stat-group {
+  background: var(--bg-2);
+  border: 1px solid var(--bd-1);
+  border-radius: 8px;
+  padding: 16px;
+  min-width: 220px;
+  flex: 1 1 220px;
+}
+.stat-group h3 {
+  font-size: 0.95rem;
+  color: var(--tx-2);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--bd-1);
+}
+.stat:last-child { border-bottom: none; }
+.stat-label {
+  font-size: 0.92rem;
+  color: var(--tx-2);
+}
+.stat-number {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--tx-1);
+}
+
+.content { padding: 22px 24px; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--legend-bg);
+  border: 1px solid var(--bd-1);
+  border-radius: 999px;
+  font-size: 0.88rem;
+  color: var(--tx-2);
+}
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  outline: 1px solid var(--bd-1);
+}
+
+.table-wrapper {
+  overflow: auto;
+  border: 1px solid var(--bd-1);
+  border-radius: 8px;
+  background: var(--bg-1);
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 820px;
+}
+thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-2);
+  color: var(--tx-2);
+  padding: 14px 14px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.4px;
+  border-bottom: 1px solid var(--bd-2);
+  z-index: 1;
+}
+td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--bd-1);
+  color: var(--tx-1);
+  vertical-align: top;
+}
+tbody tr:nth-child(even) { background: var(--row-even); }
+tbody tr:hover { background: var(--row-hover); }
+
+.vulnerable { border-left: 3px solid var(--open-bd); }
+.mitigated  { border-left: 3px solid var(--unverified-bd); }
+.safe       { border-left: 3px solid var(--resolved-bd); }
+
+.cve-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Liberation Mono", Consolas, "DejaVu Sans Mono", "Courier New", monospace;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-bd);
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-block;
+}
+.package {
+  font-weight: 600;
+  color: var(--tx-1);
+}
+
+.status-open,
+.status-resolved,
+.status-unverified,
+.status-not-affected {
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  text-align: center;
+  display: inline-block;
+  min-width: 98px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.status-open {
+  background: var(--open-bg);
+  color: var(--open-fg);
+  border-color: var(--open-bd);
+}
+.status-resolved {
+  background: var(--resolved-bg);
+  color: var(--resolved-fg);
+  border-color: var(--resolved-bd);
+}
+.status-unverified {
+  background: var(--unverified-bg);
+  color: var(--unverified-fg);
+  border-color: var(--unverified-bd);
+}
+.status-not-affected {
+  background: var(--na-bg);
+  color: var(--na-fg);
+  border-color: var(--na-bd);
+}
+
+.mitigation-indicator {
+  font-size: 1rem;
+  font-weight: 800;
+}
+.mitigation-yes { color: var(--mitig-yes); }
+.mitigation-no  { color: var(--mitig-no); }
+
+.comment {
+  font-size: 0.9rem;
+  color: var(--tx-3);
+  font-style: normal;
+  max-width: 420px;
+  word-wrap: break-word;
+}
+
+#load-more-btn {
+  background: var(--accent);
+  color: var(--bg-1);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  margin: 0 auto;
+  display: inline-block;
+}
+#load-more-btn:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+#load-more-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.search-container {
+  margin-bottom: 18px;
+}
+#cve-search {
+  width: 100%;
+  max-width: 420px;
+  padding: 10px 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--bd-1);
+  border-radius: 8px;
+  color: var(--tx-1);
+  font-size: 0.95rem;
+}
+#cve-search:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--bd-1);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+.error-message {
+  color: var(--open-fg);
+  text-align: center;
+  padding: 40px;
+}
+
+@media (max-width: 768px) {
+  body { padding: 20px 12px; }
+  .header { padding: 18px; }
+  .header h1 { font-size: 1.25rem; }
+  .content { padding: 16px; }
+  th, td { padding: 10px 12px; }
+  .stat-group { min-width: 180px; }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Secureblue security tracker</h1>
+            <p>Generated on : Thu Nov 13 02:33:54 PM CET 2025</p>
+            <div class="stats">
+                <div class="stat-group">
+                    <h3>debian</h3>
+                    <div class="stat">
+                        <span class="stat-label">Open</span>
+                        <span class="stat-number">6914</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Resolved</span>
+                        <span class="stat-number">24619</span>
+                    </div>
+                </div>
+                
+                <div class="stat-group">
+                    <h3>secureblue</h3>
+                    <div class="stat">
+                        <span class="stat-label">Open</span>
+                        <span class="stat-number">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Resolved</span>
+                        <span class="stat-number">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Not Affected</span>
+                        <span class="stat-number">17</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Unverified</span>
+                        <span class="stat-number">31516</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Mitigated</span>
+                        <span class="stat-number">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #ff4444;"></div>
+                    <span>Vulnerable</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #ffcc00;"></div>
+                    <span>Mitigated</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #44ff44;"></div>
+                    <span>Not Affected</span>
+                </div>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" id="cve-search" placeholder="Search packages or CVEs..." autocomplete="off">
+            </div>
+            
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Package</th>
+                            <th>CVE ID</th>
+                            <th>Debian</th>
+                            <th>Secureblue</th>
+                            <th>Mitigated</th>
+                            <th>Comment</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cve-tbody">
+                        <tr id="loading-row">
+                            <td colspan="6" style="text-align: center; padding: 40px;">
+                                <div class="loading-spinner"></div>
+                                <div style="margin-top: 16px; color: var(--tx-3);">Loading CVE data...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px; margin-bottom: 30px;">
+                <button id="load-more-btn" style="display: none;">Load More (showing <span id="visible-count">0</span> of <span id="total-count">0</span>)</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+const CVE_APP = {
+    data: [],
+    visibleRows: 20,
+    currentSearch: '',
+    isLoading: true,
+    currentPage: 0
+};
+
+let searchTimeout;
+
+async function initializeApp() {
+    try {
+        const response = await fetch('data.json');
+        if (!response.ok) throw new Error(`HTTP ${response.status} : ${response.statusText}`);
+        const jsonData = await response.json();
+        CVE_APP.data = jsonData.cves;
+        CVE_APP.isLoading = false;
+        renderTable();
+    } catch (error) {
+        showError(error);
+    }
+}
+
+function showError(error) {
+    const tbody = document.getElementById('cve-tbody');
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="6" class="error-message">
+                <div>Error loading CVE data</div>
+                <div style="font-size: 0.9rem; margin-top: 8px;">${error.message}</div>
+                <button onclick="initializeApp()" style="margin-top: 16px; padding: 8px 16px; background: var(--accent); color: var(--bg-1); border: none; border-radius: 6px; cursor: pointer;">Retry</button>
+            </td>
+        </tr>
+    `;
+    document.getElementById('load-more-btn').style.display = 'none';
+}
+
+function getDebianStatus(debianData) {
+    if (!debianData || !debianData.releases) return 'unknown';
+    return Object.values(debianData.releases).some(r => r.status === 'open') ? 'open' : 'resolved';
+}
+
+function getSecureblueStatus(packageName, cveId, secureblueData) {
+    if (!secureblueData) {
+        return { status: 'unverified', mitigated: false, comment: '' };
+    }
+    if (secureblueData.status !== undefined) {
+        return {
+            status: secureblueData.status || 'unverified',
+            mitigated: secureblueData.mitigated || false,
+            comment: secureblueData.comment || ''
+        };
+    }
+    if (secureblueData.ALL && secureblueData.ALL.releases && secureblueData.ALL.releases.stream) {
+        const stream = secureblueData.ALL.releases.stream;
+        return {
+            status: stream.status || 'unverified',
+            mitigated: stream.mitigated || false,
+            comment: stream.comment || ''
+        };
+    }
+    if (!secureblueData[cveId] || !secureblueData[cveId].releases || !secureblueData[cveId].releases.stream) {
+        return { status: 'unverified', mitigated: false, comment: '' };
+    }
+    const stream = secureblueData[cveId].releases.stream;
+    return {
+        status: stream.status || 'unverified',
+        mitigated: stream.mitigated || false,
+        comment: stream.comment || ''
+    };
+}
+
+function createRow(item) {
+    const tr = document.createElement('tr');
+    const debianStatus = getDebianStatus(item.debian);
+    const secureblueInfo = getSecureblueStatus(item.package, item.cve_id, item.secureblue);
+
+    let rowClass = '';
+    if (secureblueInfo.status === 'open' && secureblueInfo.mitigated) {
+        rowClass = 'mitigated';
+    } else if (secureblueInfo.status === 'open') {
+        rowClass = 'vulnerable';
+    } else if (secureblueInfo.status === 'not affected') {
+        rowClass = 'safe';
+    }
+
+    tr.className = rowClass;
+    const debianStatusClass = debianStatus === 'unknown' ? 'unknown' : debianStatus;
+
+    tr.innerHTML = `
+        <td class="package">${item.package}</td>
+        <td><span class="cve-id">${item.cve_id}</span></td>
+        <td><span class="status-${debianStatusClass}">${debianStatus.charAt(0).toUpperCase() + debianStatus.slice(1)}</span></td>
+        <td><span class="status-${secureblueInfo.status.replace(' ', '-')}">${secureblueInfo.status.charAt(0).toUpperCase() + secureblueInfo.status.slice(1)}</span></td>
+        <td><span class="mitigation-indicator ${secureblueInfo.mitigated ? 'mitigation-yes' : 'mitigation-no'}">${secureblueInfo.mitigated ? '✓' : '𐄂'}</span></td>
+        <td class="comment">${secureblueInfo.comment}</td>
+    `;
+    return tr;
+}
+
+function renderTable() {
+    const tbody = document.getElementById('cve-tbody');
+    tbody.innerHTML = '';
+    const searchTerm = CVE_APP.currentSearch.toLowerCase();
+
+    const filteredData = searchTerm 
+        ? CVE_APP.data.filter(item =>
+            item.package.toLowerCase().includes(searchTerm) ||
+            item.cve_id.toLowerCase().includes(searchTerm)
+          )
+        : CVE_APP.data;
+
+    const startIndex = 0;
+    const endIndex = searchTerm ? filteredData.length : Math.min((CVE_APP.currentPage + 1) * CVE_APP.visibleRows, filteredData.length);
+    const fragment = document.createDocumentFragment();
+
+    for (let i = startIndex; i < endIndex; i++) {
+        if (filteredData[i]) {
+            fragment.appendChild(createRow(filteredData[i]));
+        }
+    }
+
+    tbody.appendChild(fragment);
+
+    const visibleCount = endIndex;
+    const totalCount = CVE_APP.data.length;
+
+    document.getElementById('visible-count').textContent = visibleCount;
+    document.getElementById('total-count').textContent = totalCount;
+
+    const button = document.getElementById('load-more-btn');
+    if (searchTerm || visibleCount >= filteredData.length) {
+        button.style.display = 'none';
+    } else {
+        button.style.display = 'inline-block';
+    }
+}
+
+document.getElementById('cve-search').addEventListener('input', function(e) {
+    clearTimeout(searchTimeout);
+    const term = e.target.value.toLowerCase();
+    searchTimeout = setTimeout(() => {
+        CVE_APP.currentSearch = term;
+        CVE_APP.currentPage = 0;
+        renderTable();
+    }, 200);
+});
+
+document.getElementById('load-more-btn').addEventListener('click', function() {
+    CVE_APP.currentPage++;
+    renderTable();
+});
+
+document.addEventListener('DOMContentLoaded', initializeApp);
+</script>
