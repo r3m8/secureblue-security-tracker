@@ -1,6 +1,6 @@
 # Secureblue security tracker
 
-Tracks Secureblue CVEs based on Debian with community-contributed status annotations. Automatic update every hour.
+Tracks Secureblue CVEs based on Debian with community-contributed status annotations. Automatic update every hour with Github Actions.
 
 This project is NOT official and NOT affiliated to Secureblue. Please report real issues [here](https://github.com/secureblue/secureblue/issues).
 
